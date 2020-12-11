@@ -2,7 +2,7 @@
 
 let popup = document.querySelector(".popup"),
     closePopup = document.querySelector(".close");
-
+let footerPrice = 0;
 const popupOpenFunction = (value) => {
     popup.style.display = "block";
 
@@ -18,7 +18,7 @@ const popupOpenFunction = (value) => {
 
     // footer button
     let footerButtonPrice = buy__button.childNodes[1].childNodes[1];
-    console.log(footerButtonPrice);
+    // console.log(footerButtonPrice);
 
     popup.childNodes[1].childNodes[1].childNodes[1].innerHTML = name;
 
@@ -36,9 +36,11 @@ const popupOpenFunction = (value) => {
         } else {
             count--;
             price = price - onePiece;
+            // footerPrice = footerPrice-price;
         }
         countProduct.innerHTML = `Желаемое количество: ${count}`;
         priceAdd.innerHTML = `Добавить за ${price} р`;
+        // footerButtonPrice.innerHTML = `${footerPrice} р`;
     }
     plus.onclick = () => {
         if (count + 1 > countMax) {
@@ -47,9 +49,18 @@ const popupOpenFunction = (value) => {
         } else {
             count++;
             price = price + onePiece;
+            // footerPrice = footerPrice+price;
         }
         countProduct.innerHTML = `Желаемое количество: ${count}`;
         priceAdd.innerHTML = `Добавить за ${price} р`;
+        // footerButtonPrice.innerHTML = `${footerPrice} р`;
+    }
+
+    priceAdd.onclick = () =>{
+        // alert(1);
+        footerPrice = price;
+        footerButtonPrice.innerHTML = `${footerPrice} р`;
+        popup.style.display = "none";
     }
     // POST
 
