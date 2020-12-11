@@ -1,0 +1,15 @@
+header{
+    position: fixed;
+    height: 86px;
+    width: 100%;
+    background-color: #ffffff;
+    text-align: center;
+}
+.header__name{
+    text-transform: uppercase;
+    margin-top: 32px;
+    font-size: 18px;
+    line-height: 20px;
+    letter-spacing: 0.05em;
+    color: #151515;
+}

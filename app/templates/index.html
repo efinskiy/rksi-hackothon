@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <title>Столовая</title>
+</head>
+
+<body>
+    <header>
+        <h1 class="header__name">
+            Столовая
+        </h1>
+    </header>
+
+    <main>
+        {% for product in menu %}
+        <div class="card">
+            <div class="card__preview" id="product_number_{{ product.id }}" data-price="{{ product.price }}" data-id={{product.id}}>
+                <img src="{{ url_for('static', filename='img/%s' % product.img) }}" alt="" class="card__img">
+                <div class="card__preview-info">
+                    <div class="card__block">
+                        <p class="card__block__name-food">{{product.name}}</p>
+                        <p class="card__block__quontity">{{product.weight}}г</p>
+                    </div>
+                </div>
+                <div class="card__button button" onclick="popupOpenFunction(product_number_{{ product.id }})">
+                    <p class="button_text">Заказать за {{ product.price }}р</p>
+                </div>
+                <div class="card_shadow"></div>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </main>
+
+
+    <div class="wrapper-to-popup popup">
+        <div class="popup__content">
+            <div class="popup__header">
+                <h2 class="popup__header_name">Название товара</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="popup-body">
+                <p class="quontity__suggest">Желаемое количество</p>
+                <div class="popup-body__buttons">
+                    <input type="button" value="-" id="minus" class="popup-body__buttons_btn button__count">
+                    <input type="button" value="+" id="plus" class="popup-body__buttons_btn button__count">
+                </div>
+                <div class="popup-body__button_add button" >
+                    <p class="button_text_add">Добавить за</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer>
+        <ul class="nav__footer-bar">
+            <li class="extra__block">
+                <div class="extra__block_inside">
+                    <img src="{{ url_for('static', filename='img/cutlery 1.png') }}" class="extra__block_icon" alt="">
+                </div>
+            </li>
+            <li id="buy__button">
+                <div class="buy__price">
+                    <div class="buy__price__block">{{status}} Р</div>
+                    <div class="buy__price__quantity">
+                        <p class="quantity">
+                            x3
+                        </p>
+                    </div>
+                </div>
+            </li>
+            <li class="extra__block">
+                <div class="extra__block_inside">
+                    <img src="{{ url_for('static', filename='img/wall-clock 1.png') }}" class="extra__block_icon" alt="">
+                </div>
+            </li>
+        </ul>
+    </footer>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+
+</html>
