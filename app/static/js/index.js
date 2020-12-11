@@ -58,7 +58,7 @@ const popupOpenFunction = (value) => {
 
     priceAdd.onclick = () =>{
         // alert(1);
-        footerPrice = price;
+        footerPrice += price;
         footerButtonPrice.innerHTML = `${footerPrice} р`;
         popup.style.display = "none";
     }
