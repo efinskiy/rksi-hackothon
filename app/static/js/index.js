@@ -2,8 +2,7 @@
 
 let popup = document.querySelector(".popup"),
     closePopup = document.querySelector(".close");
-// /api/getbalance
-// {product_id: id}
+
 const popupOpenFunction = (value) => {
     popup.style.display = "block";
 
@@ -17,6 +16,10 @@ const popupOpenFunction = (value) => {
     let countMax = 0;
 
 
+    // footer button
+    let footerButtonPrice = buy__button.childNodes[1].childNodes[1];
+    console.log(footerButtonPrice);
+
     popup.childNodes[1].childNodes[1].childNodes[1].innerHTML = name;
 
     countProduct.innerHTML = `Желаемое количество: ${count}`;
@@ -29,7 +32,6 @@ const popupOpenFunction = (value) => {
     minus.onclick = () => {
         if (count - 1 == 0) {
             alert('количество должно положительным');
-            console.log(count);
             return;
         } else {
             count--;
@@ -61,7 +63,8 @@ const popupOpenFunction = (value) => {
                 "product_id": id
             })
         }).then(response => response.json())
-        .then(result => countMax=JSON.stringify(result.q))
-        console.log(countMax);
-
+        .then(result => JSON.stringify(result.q)).then(res => {
+            countMax = res;
+        });
 }
+
