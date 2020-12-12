@@ -1,9 +1,11 @@
+from re import L
 from flask import Blueprint, session, render_template, abort, Response
 from flask.globals import current_app, request
 from flask.helpers import url_for
 from flask_socketio import emit, join_room, leave_room
+from sqlalchemy.orm.query import Query
 from werkzeug.utils import redirect
-from .models import Basket, Customer, Menu, Settings
+from .models import Basket, Customer, Menu, Order, Settings
 import json
 from . import db
 
@@ -34,15 +36,17 @@ def fixCustomer():
 @main.route('/')
 def mainpage():
     s = Settings.query.filter_by(key='status').first()
-    if s.value == 1:
-        kstatus = 1
-        current_app.logger.info("Status: {}".format(kstatus))
-    else:
-        kstatus = 0
-        current_app.logger.info("Status: {}".format(kstatus))
-    current_app.logger.info('Real Status: {}'.format(s.value))
-    menu = Menu.query.all()
-    return render_template('index.html', menu=menu, status=kstatus)
+    c = int(session['customer'])
+    if int(s.value) == 1: kstatus = 1
+    else: kstatus = 0
+    menu = Menu.query.filter(Menu.balance>0).all()
+    b = Basket.query.filter_by(cust_id=c).all()
+    basketvalue, basketcount = 0, 0
+    for position in b:
+        basketvalue+=int(position.menu.price)*int(position.amount)
+        basketcount+=int(position.amount)
+    
+    return render_template('index.html', menu=menu, status=kstatus, bv=basketvalue, bc = basketcount)
 
 
 @main.route('/api/getbalance', methods=['POST'])
@@ -57,14 +61,18 @@ def getbasket():
     customer_id = int(session['customer'])
 
     db_items = Basket.query.filter_by(cust_id=customer_id).all()
-    items = {}
-    for id, item in enumerate(db_items):
-        items[id] = {
-            'name': item.item.name,
-            'amount': item.amount,  
-            'summ': item.item.price * item.amount
-                    } 
-    return Response(response=json.dumps({'status': 'good'}+items, ensure_ascii=False), status=200, mimetype='application/json')
+    resp = {'items': {}}
+    summ = 0
+    for position in db_items:
+        p = {}
+        p['id'] = position.id
+        p['name'] = position.menu.name
+        p['amount'] = position.amount
+        p['value'] = position.amount*position.menu.price
+
+        summ+=p['value']
+        resp['items'][p['id']] = p
+    return Response(response=json.dumps({'status': 'good', 'response': resp, 'summ': summ}, ensure_ascii=False), status=200, mimetype='application/json')
 
 
 @main.route('/api/addtobasket', methods=['POST'])
@@ -74,15 +82,17 @@ def addtobasket():
         item_id = int(request.json['item_id'])
         amount = int(request.json['amount'])
     except:
-        return Response(response=json.dumps({'status': "bad", 'e_desc': 'validation error'}, ensure_ascii=False), status=200, mimetype='application/json')
+        return Response(response=json.dumps({'status': "bad", 'e_desc': 'validation_error'}, ensure_ascii=False), status=200, mimetype='application/json')
     
     item = Menu.query.filter_by(id=item_id).first()
     customer = Customer.query.filter_by(id=customer_id).first()
     
-    if item.balance < amount: return Response(response=json.dumps({'status': 'bad', 'e_desc': 'q error'}, ensure_ascii=False), status=200, mimetype='application/json')
+    if item.balance < amount: return Response(response=json.dumps({'status': 'bad', 'e_desc': 'q_error'}, ensure_ascii=False), status=200, mimetype='application/json')
 
     if Basket.query.filter_by(cust_id=customer.id, item=item.id).first():
         b = Basket.query.filter_by(cust_id=customer.id, item=item.id).first()
+        if (b.amount + amount)>(item.balance):
+            return Response(response=json.dumps({'status': 'bad', 'e_desc': 'not_enough'}))
         b.amount +=amount
         db.session.add(b)
         db.session.commit()
@@ -93,4 +103,46 @@ def addtobasket():
         db.session.commit()
         return Response(response=json.dumps({'status':'good', 'q': amount}, ensure_ascii=False), status=200, mimetype='application/json')
 
-        
+@main.route('/api/gethistory', methods=['GET'])
+def gethistory():
+    customer = session['customer']
+    history = { 'orders': {} }
+    o = Order.query.filter_by(customer_id=customer).all()
+    current_app.logger.info("log len o: {}".format(len(o)))
+    for ord in o:
+        ord_id = ord.id
+        ord_price = ord.ord_price
+        items = json.loads(ord.items)
+        current_app.logger.info(type(items))
+        current_app.logger.info(items['items'])
+        # current_app.logger.info(items['items']['burger'])
+        itms = {}
+        for itm in items['items']:
+            id = itm
+            value = items['items'][str(itm)]
+            # current_app.logger.info("log: {}:{}".format(id,value))
+            m = Menu.query.filter_by(id=int(id)).first()
+            itms[id] = {
+            
+            str(m.name):{
+            "count": value,
+            "price": m.price
+                    }
+            
+            }
+        history['orders'][str(ord_id)] = itms
+        return json.dumps(history, ensure_ascii=False)
+
+
+    
+
+    
+
+# debug routes
+
+@main.route('/debug/clearbasket')
+def dbgclearbasket():
+    c = int(session['customer'])
+    Basket.query.filter_by(cust_id=c).delete()
+    db.session.commit()
+    return redirect(url_for('main.mainpage'))

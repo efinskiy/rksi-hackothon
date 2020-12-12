@@ -65,3 +65,6 @@ class Order(db.Model):
     ord_price = db.Column(db.Float, nullable = False)
     date = db.Column(db.DateTime)
     status = db.Column(db.Integer)
+
+    def __str__(self) -> str:
+        return str(self.items)

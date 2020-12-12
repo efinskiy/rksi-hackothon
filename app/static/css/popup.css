@@ -92,3 +92,34 @@
         opacity: 1;
     }
 }
+
+
+/* basket */
+.position__name{
+    width: 90%;
+    margin: 5px auto;
+}
+.position__name__counter{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 90%;
+    margin: 0 auto;
+    font-size: 15px;
+    padding-bottom: 10px;
+}
+.summ{
+    /* float: right;
+    margin-right: 20%; */
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 10px;
+}
+.popupBasket__hr{
+    width: 90%;
+    margin: 0 auto;
+}
+
+.active{
+    border: 2px solid #FFC404;
+}
