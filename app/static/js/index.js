@@ -25,7 +25,7 @@ const popupOpenFunction = (value) => {
     popup.childNodes[1].childNodes[1].childNodes[1].innerHTML = name;
 
     countProduct.innerHTML = `Желаемое количество: ${count}`;
-    priceAdd.innerHTML = `Добавить за ${price} р`;
+    priceAdd.innerHTML = `Добавить за ${price}  ₽`;
 
 
     closePopup.onclick = () => {
@@ -43,7 +43,7 @@ const popupOpenFunction = (value) => {
             footerQ = count;
         }
         countProduct.innerHTML = `Желаемое количество: ${count}`;
-        priceAdd.innerHTML = `Добавить за ${price} р`;
+        priceAdd.innerHTML = `Добавить за ${price}  ₽`;
     }
 
 
@@ -112,17 +112,27 @@ const popupOpenFunction = (value) => {
 
     }
 }
-
-
-closeBasket.onclick = () => {
+footer__menu.onclick = () =>{
     popupBasket.style.display = "none";
-    buy__button.classList.toggle("active");
+    buy__button.classList.remove("active");
+    footer__menu.classList.add("active");
 }
+
+$("#closeBasket").click(function () {
+    popupBasket.style.display = "none";
+    buy__button.classList.remove("active");
+    histori.classList.remove("active");
+    footer__menu.classList.add("active");
+    popupHistori.style.display = "none";
+})
 
 $("#buy__button").click(function () {
     popupBasket.style.display = "block";
-
-    buy__button.classList.toggle("active");
+    $("#popupBasket__body").empty();
+    buy__button.classList.add("active");
+    footer__menu.classList.remove("active");
+    histori.classList.remove("active");
+    popupHistori.style.display = "none";
 
     fetch("/api/getbasket", {
             method: 'POST',
@@ -131,8 +141,35 @@ $("#buy__button").click(function () {
             }
         }).then(response => response.json())
         .then(result => {
-            console.log(result.response[2]);
-            // console.log(JSON.stringify(result.response));
+            let arrItems = result.response.items;
+            let itemsBasket={
+                item:[],
+                name:[],
+                amount:[],
+                value:[]
+            };
+
+            for (const key in arrItems) {
+                itemsBasket.item.push(arrItems[key].id);
+                itemsBasket.name.push(arrItems[key].name);
+                itemsBasket.amount.push(arrItems[key].amount);
+                itemsBasket.value.push(arrItems[key].value);
+            }
+            console.log(itemsBasket);
+            for (let i = 0; i < itemsBasket.item.length; i++) {
+                $("#popupBasket__body").append(`<div class="popup-body__position">
+                <p class="position__name"><b>${itemsBasket.name[i]}</b></p>
+                <div class="position__name__counter">
+                    <p class="count_pos"><i>Количество <b>${itemsBasket.amount[i]} шт</b></i></p>
+                    <p class="price"><i>Стоймость <b>${itemsBasket.value[i]}  ₽</b></i></p>
+                </div>
+                <hr class="popupBasket__hr">
+            </div>`);
+            }
+            $("#popupBasket__body").append(`<p class="summ"> Итого <b>${result.summ} ₽</b></p>`);
+            $("#popupBasket__body").append(`<div class="popup-body__button_add button ">
+            <p class="button_text_add">Оплатить</p>
+        </div>`);
         });
 });
 
@@ -140,10 +177,16 @@ $("#buy__button").click(function () {
 
 histori.onclick = () =>{
     popupHistori.style.display = "block";
+    histori.classList.add("active");
+    buy__button.classList.remove("active");
+    footer__menu.classList.remove("active");
 }
 closeHistori.onclick = () =>{
     popupHistori.style.display = "none";
 }
-window.onload = (value) => {
-    console.log(value);
+window.onload = (dbg) => {
+    console.log(dbg);
 }
+$(".cookie__close").click(function () {
+    $(".cookie__block").hide();
+})

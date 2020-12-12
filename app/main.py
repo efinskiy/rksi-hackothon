@@ -2,6 +2,7 @@ from re import L
 from flask import Blueprint, session, render_template, abort, Response
 from flask.globals import current_app, request
 from flask.helpers import url_for
+from flask_migrate import history
 from flask_socketio import emit, join_room, leave_room
 from sqlalchemy.orm.query import Query
 from werkzeug.utils import redirect
@@ -33,6 +34,41 @@ def fixCustomer():
         session['customer'] = str(customer.id)
         current_app.logger.info("New user on fixCustomer trigger: {}".format(customer.id))
 
+
+def gethistory(customer):
+    history = { 'orders': [] }
+    o = Order.query.filter_by(customer_id=customer).order_by(Order.id.desc()).all()
+    current_app.logger.info("log len o: {}".format(len(o)))
+
+    for ord in o:
+        current_app.logger.info("iteration {}".format(ord.id))
+        ord_id = ord.id
+        ord_price = ord.ord_price
+        confirm = ord.confirmation_code
+        status = ord.status
+        items = json.loads(ord.items)
+        current_app.logger.info(type(items))
+        current_app.logger.info(items['items'])
+        # current_app.logger.info(items['items']['burger'])
+        itms = [ord_id, confirm, status, ord_price, []]
+        for itm in items['items']:
+            id = itm
+            value = items['items'][str(itm)]
+            # current_app.logger.info("log: {}:{}".format(id,value))
+            m = Menu.query.filter_by(id=int(id)).first()
+            itms[4].append([
+                {
+            'id': itm,
+            'name': m.name,
+            "count": int(value),
+            "price": int(m.price)
+                }])
+        history['orders'].append(itms)
+    current_app.logger.info(history)
+    return history
+
+
+
 @main.route('/')
 def mainpage():
     s = Settings.query.filter_by(key='status').first()
@@ -45,8 +81,9 @@ def mainpage():
     for position in b:
         basketvalue+=int(position.menu.price)*int(position.amount)
         basketcount+=int(position.amount)
-    
-    return render_template('index.html', menu=menu, status=kstatus, bv=basketvalue, bc = basketcount)
+    h = gethistory(c)
+    current_app.logger.info("user: {}".format(c))
+    return render_template('index.html', menu=menu, status=kstatus, bv=basketvalue, bc = basketcount, history = h)
 
 
 @main.route('/api/getbalance', methods=['POST'])
@@ -102,36 +139,6 @@ def addtobasket():
         db.session.add(b)
         db.session.commit()
         return Response(response=json.dumps({'status':'good', 'q': amount}, ensure_ascii=False), status=200, mimetype='application/json')
-
-@main.route('/api/gethistory', methods=['GET'])
-def gethistory():
-    customer = session['customer']
-    history = { 'orders': {} }
-    o = Order.query.filter_by(customer_id=customer).all()
-    current_app.logger.info("log len o: {}".format(len(o)))
-    for ord in o:
-        ord_id = ord.id
-        ord_price = ord.ord_price
-        items = json.loads(ord.items)
-        current_app.logger.info(type(items))
-        current_app.logger.info(items['items'])
-        # current_app.logger.info(items['items']['burger'])
-        itms = {}
-        for itm in items['items']:
-            id = itm
-            value = items['items'][str(itm)]
-            # current_app.logger.info("log: {}:{}".format(id,value))
-            m = Menu.query.filter_by(id=int(id)).first()
-            itms[id] = {
-            
-            str(m.name):{
-            "count": value,
-            "price": m.price
-                    }
-            
-            }
-        history['orders'][str(ord_id)] = itms
-        return json.dumps(history, ensure_ascii=False)
 
 
     

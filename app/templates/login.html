@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <title>Авторизация</title>
+</head>
+<body>
+    <main>
+        <form id="formRegistr">
+            <label>
+                Логин
+                <input type="text" placeholder="Введите логин">
+            </label>
+            <label>
+                Пароль
+                <input type="password" placeholder="Введите пароль">
+            </label>
+            <input type="button" value="Войти">
+        </form>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>

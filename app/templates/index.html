@@ -9,6 +9,14 @@
 </head>
 
 <body>
+    <div id="dbg" style="display:none"></div>
+    <div class="cookie__block">
+        <span class="cookie__close">&times;</span>
+        <div class="first">
+            <p>Оставаясь на нашем сайте, вы соглашаетесь с использованием файлов cookie. Подробности в Политике</p>
+        </div>
+    </div>
+    
     <header>
         <h1 class="header__name">
             Столовая
@@ -27,7 +35,7 @@
                     </div>
                 </div>
                 <div class="card__button button" onclick="popupOpenFunction(product_number_{{ product.id }})">
-                    <p class="button_text">Заказать за {{ product.price |int }}р</p>
+                    <p class="button_text">Заказать за {{ product.price |int }} ₽</p>
                 </div>
                 <div class="card_shadow"></div>
             </div>
@@ -63,24 +71,15 @@
                 <h2 class="popup__header_name">Ваша корзина</h2>
                 <span class="close" id="closeBasket">&times;</span>
             </div>
-            <div class="popup-body">
-                <div class="popup-body__position">
-                    <p class="position__name"><b>1</b></p>
-                    <div class="position__name__counter">
-                        <p class="count_pos"><i>Количество <b>3 шт</b></i></p>
-                        <p class="price"><i>Стоймость <b>150 р</b></i></p>
-                    </div>
-                    <hr class="popupBasket__hr">
-                </div>
-
-                <p class="summ"> Итого <b>200 р</b></p>
-                <div class="popup-body__button_add button ">
-                    <p class="button_text_add">Оплатить</p>
-                </div>
+            <div class="popup-body" id="popupBasket__body">
             </div>
         </div>
     </div>
 
+    <!-- 
+
+
+        -->
 
     <div class="wrapper-to-popup popup popupHistori">
         <div class="popup__content">
@@ -88,15 +87,46 @@
                 <h2 class="popup__header_name">Ваша история</h2>
                 <span class="close" id="closeHistori">&times;</span>
             </div>
-            <div class="popup-body">
-                <div class="popup-body__position">
-                    <p>У вас пока ничего не заказанно</p>
+            <div class="popup-body clearMargin">
+                {% if not history %}
+                <div class="popup-body__position empty">
+                    <p>Список ваших покупок - пуст</p>
+                </div>
+                {% else %}
+                {% for order in history.orders %}
+                <div class="popup-body__history">
+                    <div class="history__name">
+                        <p>Заказ № {{order[0]}}</p>
+                    </div>
+                    <div class="confirmation">
+                        <p class="conf_code">Код подтверждения: {{order[1]}}</p>
+                    </div>
+                    {% for obj in order[4] %}
+                    <div class="blocks__history">
+                        <p class="blocks__history_name"><b>{{obj[0].name}}</b></p>
+                        <div class="blocks__history__info">
+                            <p class="blocks__history__info_count"><i><b></b>{{obj[0].count}} шт</i></p>
+                            <p class="blocks__history__info_price"><i><b></b>{{obj[0].price}} ₽</i></p>
+                        </div>
+                       
+                    </div>
+                    {% endfor %}
+                    
+                    <hr class="blocks__history__hr">
                 </div>
 
-                <!-- <p class="summ"> Итого <b>200 р</b></p> -->
+                <p class="summ"> Итого <b>{{order[3] | int}} р</b></p>
+                {% if order[2]==0 %}
                 <div class="popup-body__button_add button ">
                     <p class="button_text_add">Оплатить</p>
                 </div>
+                {% endif %}
+                
+                {% endfor %}
+                
+                {% endif %}
+
+                
             </div>
         </div>
     </div>
@@ -110,7 +140,7 @@
             </li>
             <li id="buy__button" >
                 <div class="buy__price">
-                    <div class="buy__price__block">{{bv}} Р</div>
+                    <div class="buy__price__block">{{bv}} ₽</div>
                     <div class="buy__price__quantity">
                         <p class="quantity" id="quantity__footer">
                             x{{bc}}
