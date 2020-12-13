@@ -19,6 +19,10 @@ footer{
     height: 100px;
     background: #ffffff;
     border-radius: 50%;
+    
+}
+.buy__button{
+    border: 2px solid #ffffff;
 }
 .extra__block{
     width: 70px;
@@ -26,6 +30,7 @@ footer{
     background-color: #ffffff;
     border-radius: 50%;
     margin-top: 18px;
+    border: 2px solid #ffffff;
 }
 .extra__block_inside{
     width: 58px;

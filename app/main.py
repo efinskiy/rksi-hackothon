@@ -1,18 +1,28 @@
 from re import L
 from flask import Blueprint, session, render_template, abort, Response
 from flask.globals import current_app, request
-from flask.helpers import url_for
-from flask_migrate import history
+from flask.helpers import make_response, url_for
 from flask_socketio import emit, join_room, leave_room
-from sqlalchemy.orm.query import Query
 from werkzeug.utils import redirect
 from .models import Basket, Customer, Menu, Order, Settings
 import json
+from .unitpay_lib import *
+from .UnitPay import * 
+from .secrets import Password
+import random
+import datetime
 from . import db
+from . import socketio
+
 
 import logging
 
+room = 'kitchen'
 main = Blueprint('main', __name__)
+
+unitpay = UnitPay('f5project.ru', Password.unitpaysc)
+
+
 
 @main.before_app_first_request
 def newCustomer():
@@ -35,9 +45,53 @@ def fixCustomer():
         current_app.logger.info("New user on fixCustomer trigger: {}".format(customer.id))
 
 
+@main.route('/payments/handler')
+def payhandler():
+    try:
+        if request.args.get('method')=='check':
+            return Response(response=unitpay.getSuccessHandlerResponse('Check Success. Ready to pay.'), status=200, mimetype='appilication/json')
+        if request.args.get('method')=='pay':
+            current_app.logger.debug(request.args)
+            order_id = request.args.get('params[account]')
+            order_sum = request.args.get('params[orderSum]')      
+            order = Order.query.filter_by(id=order_id).first()
+            if not order:
+                raise Exception('Order not found')
+                
+            
+            if (int(float(order_sum)) != int(order.ord_price) ) or (int(order_id) != order.id):
+                current_app.logger.info('{}:{}. {}:{}'.format(int(float(order_sum)), int(order.ord_price), order_id, order.id))
+                if request.args.get('params[account]')=='test':
+                   current_app.logger.info('test passed')
+                else:
+                    return json.dumps({'result': {'message': 'Invalid'}})
+            
+            else:
+                order.status = 1
+                order.date = datetime.datetime.now()
+                db.session.add(order)
+                db.session.commit()
+                return json.dumps({'result': {'message': 'Pay success'}})
+        if request.args.get('method')=='error':
+            pass
+        if request.args.get('method')=='check':
+            pass
+    except Exception as e:
+        current_app.logger.critical('EXCEPTION')
+        return json.dumps( {'error': {'message': str(e)} } )
+
+
+@main.route('/api/setpolicy', methods=["POST"])
+def setpolicy():
+    resp = make_response('setted up')
+    resp.set_cookie('policy', '1', max_age=60*60*24*365*2)
+    return resp
+
 def gethistory(customer):
     history = { 'orders': [] }
     o = Order.query.filter_by(customer_id=customer).order_by(Order.id.desc()).all()
+    if not o:
+        return o
     current_app.logger.info("log len o: {}".format(len(o)))
 
     for ord in o:
@@ -46,7 +100,7 @@ def gethistory(customer):
         ord_price = ord.ord_price
         confirm = ord.confirmation_code
         status = ord.status
-        items = json.loads(ord.items)
+        items = json.loads(str(ord.items).replace("'", '"'))
         current_app.logger.info(type(items))
         current_app.logger.info(items['items'])
         # current_app.logger.info(items['items']['burger'])
@@ -67,7 +121,28 @@ def gethistory(customer):
     current_app.logger.info(history)
     return history
 
+@main.route('/api/getpayurl', methods=["POST"])
+def getpayurl():
+    c = int(session['customer'])
+    db_items = Basket.query.filter_by(cust_id=c).all()
+    items = {'items': {}}
+    summ = 0
+    desc = "Оплата заказа в столовой РКСИ"
+    for position in db_items:
+        items['items'][str(position.item)] = str(position.amount)
+        summ+=(position.amount*position.menu.price)
+    current_app.logger.info(items)
+    conf = random.randint(999, 9999)
+    o = Order(customer_id=c, confirmation_code=conf, items=str(items), ord_price=summ, status = 0)
+    db.session.add(o)
+    db.session.commit()
+    url = unitpay.form(Password.publickey, int(summ), int(o.id), str(desc), 'RUB')
 
+    return Response(response=json.dumps({'url': str(url)}), status=200, mimetype='application/json')
+
+@main.route('/policy')
+def policy():
+    return render_template('policy.html')
 
 @main.route('/')
 def mainpage():
@@ -85,6 +160,9 @@ def mainpage():
     current_app.logger.info("user: {}".format(c))
     return render_template('index.html', menu=menu, status=kstatus, bv=basketvalue, bc = basketcount, history = h)
 
+@main.route('/kitchen')
+def render_kitchen():
+    return render_template('kitchen.html')
 
 @main.route('/api/getbalance', methods=['POST'])
 def getbalance():

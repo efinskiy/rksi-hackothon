@@ -87,10 +87,6 @@ const popupOpenFunction = (value) => {
                     let q = JSON.stringify(result.q);
                     footerQ = q + count;
                     if (status == "good") {
-                        // footerButtonPrice.innerHTML = `${footerPrice} р`;
-                        // let currentQ = quantity__footer.innerHTML.split('')[1];
-                        // console.log(currentQ);
-                        // footerQuantity.innerHTML = `x${Number(q)+Number(currentQ)}`;
                         location.reload();
                     }
                     if (status == "bad") {
@@ -114,25 +110,28 @@ const popupOpenFunction = (value) => {
 }
 footer__menu.onclick = () =>{
     popupBasket.style.display = "none";
+    popupHistori.style.display = "none";
     buy__button.classList.remove("active");
+    histori.classList.remove("active");
     footer__menu.classList.add("active");
 }
 
 $("#closeBasket").click(function () {
     popupBasket.style.display = "none";
+    popupHistori.style.display = "none";
     buy__button.classList.remove("active");
     histori.classList.remove("active");
     footer__menu.classList.add("active");
-    popupHistori.style.display = "none";
 })
 
 $("#buy__button").click(function () {
     popupBasket.style.display = "block";
-    $("#popupBasket__body").empty();
-    buy__button.classList.add("active");
-    footer__menu.classList.remove("active");
-    histori.classList.remove("active");
     popupHistori.style.display = "none";
+    $("#popupBasket__body").empty();
+    $( "#histori" ).removeClass( "active");
+    $( "#footer__menu" ).removeClass( "active");
+    // addClass
+    $( "#buy__button" ).addClass( "active");
 
     fetch("/api/getbasket", {
             method: 'POST',
@@ -167,16 +166,29 @@ $("#buy__button").click(function () {
             </div>`);
             }
             $("#popupBasket__body").append(`<p class="summ"> Итого <b>${result.summ} ₽</b></p>`);
-            $("#popupBasket__body").append(`<div class="popup-body__button_add button ">
+            $("#popupBasket__body").append(`<div class="popup-body__button_add button " onclick="hendelBuy()">
             <p class="button_text_add">Оплатить</p>
         </div>`);
         });
 });
 
+const hendelBuy = ()=>{
+    // /api/getpayurl
 
+    fetch("/api/getpayurl", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+    }).then(response => JSON.stringify(response))
+    .then(result => {
+       
+    });
+}
 
 histori.onclick = () =>{
     popupHistori.style.display = "block";
+    popupBasket.style.display = "none";
     histori.classList.add("active");
     buy__button.classList.remove("active");
     footer__menu.classList.remove("active");
@@ -184,9 +196,32 @@ histori.onclick = () =>{
 closeHistori.onclick = () =>{
     popupHistori.style.display = "none";
 }
+function getCookie(name) {
+    let matches = document.cookie.match(new RegExp(
+      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+  }
+
+
 window.onload = (dbg) => {
-    console.log(dbg);
+   
+    console.log(getCookie("policy"));
+    if (getCookie("policy") == undefined) {
+        $(".cookie__block").show();
+    }else{
+        $(".cookie__block").hide();
+    }
 }
 $(".cookie__close").click(function () {
     $(".cookie__block").hide();
+    fetch("/api/setpolicy", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+    }).then(response => response)
+    .then(result => {
+        console.log(result);
+    });
 })

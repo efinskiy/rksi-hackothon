@@ -1,0 +1,16 @@
+@import "./kitchen_footer.css";
+@import "./kitchen_main_block.css";
+@import "./webfonts/Montserrat.css";
+
+*{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body{
+    background: #F6F6F5;
+    overflow-x: hidden;
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+}
