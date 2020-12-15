@@ -20,28 +20,33 @@ import logging
 room = 'kitchen'
 main = Blueprint('main', __name__)
 
-unitpay = UnitPay('f5project.ru', Password.unitpaysc)
+unitpay = UnitPay('unitpay.money', Password.unitpaysc)
 
 
 
 @main.before_app_first_request
 def newCustomer():
+    current_app.logger.debug(session)
     if 'customer' not in session:
         customer = Customer()
         db.session.add(customer)
         db.session.commit()
         session['customer'] = str(customer.id)
+        session.permanent = True
         current_app.logger.info("New user id: {}".format(customer.id))
+    current_app.logger.debug(session)
 
 @main.before_request
 def fixCustomer():
     if 'customer' in session:
         session['customer'] = session['customer']
+        session.permanent = True
     else:
         customer = Customer()
         db.session.add(customer)
         db.session.commit()
         session['customer'] = str(customer.id)
+        session.permanent = True
         current_app.logger.info("New user on fixCustomer trigger: {}".format(customer.id))
 
 
