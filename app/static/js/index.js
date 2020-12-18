@@ -180,9 +180,9 @@ const hendelBuy = ()=>{
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
-    }).then(response => JSON.stringify(response))
+    }).then(response => response.json())
     .then(result => {
-       
+      window.open(result.url, "newwindow")
     });
 }
 

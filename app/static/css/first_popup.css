@@ -1,3 +1,7 @@
+.cookie__block{
+    display:none;
+}
+
 .first{
     position: fixed;
     display: block;

@@ -3,7 +3,7 @@
 @import "./main_block.css";
 @import "./footer.css";
 @import "./popup.css";
-@import "./webfonts/Montserrat.css";
+/* @import "./webfonts/Montserrat.css"; */
 @import "./first_popup.css";
 
 
@@ -17,5 +17,5 @@ body{
     background: #F6F6F5;
     overflow-x: hidden;
     width: 100%;
-    font-family: 'Montserrat', "sans-serif";
+    font-family: "sans-serif", 'Montserrat';
 }
