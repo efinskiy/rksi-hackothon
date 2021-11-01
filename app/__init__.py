@@ -1,13 +1,16 @@
-from flask import Flask, session
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager, login_manager
 from datetime import timedelta
-from flask_socketio import SocketIO
 
-from .secrets import DB_PATH, SECRET_KEY
+from flask import Flask, session
+from flask_login import LoginManager
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
-socketio = SocketIO()
+from .configuration import CONFIG_APP_SECRET, CONFIG_DB_PATH
+
+# socketio = SocketIO()
+# from flask_socketio import SocketIO
+
+
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -17,16 +20,16 @@ def create_app():
             static_folder='static',
             template_folder='templates')
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = DB_PATH
+    app.config['SQLALCHEMY_DATABASE_URI'] = CONFIG_DB_PATH
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365*2)
-    app.secret_key = SECRET_KEY
+    app.secret_key = CONFIG_APP_SECRET
 
     
     
     db.init_app(app)
     migrate.init_app(app, db)
-    socketio.init_app(app)
+    # socketio.init_app(app)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login_get'
