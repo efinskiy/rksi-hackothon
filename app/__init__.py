@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_manager
 from datetime import timedelta
 from flask_socketio import SocketIO
 
-from .secrets import Password
+from .secrets import DB_PATH, SECRET_KEY
 
 socketio = SocketIO()
 db = SQLAlchemy()
@@ -17,10 +17,10 @@ def create_app():
             static_folder='static',
             template_folder='templates')
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = Password.DB_PATH
+    app.config['SQLALCHEMY_DATABASE_URI'] = DB_PATH
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365*2)
-    app.secret_key = Password.SECRET_KEY
+    app.secret_key = SECRET_KEY
 
     
     

@@ -2,13 +2,13 @@ from re import L
 from flask import Blueprint, session, render_template, abort, Response
 from flask.globals import current_app, request
 from flask.helpers import make_response, url_for
-from flask_socketio import emit, join_room, leave_room
+# from flask_socketio import emit, join_room, leave_room
 from werkzeug.utils import redirect
 from .models import Basket, Customer, Menu, Order, Settings
 import json
 from .unitpay_lib import *
 from .UnitPay import * 
-from .secrets import Password
+from .secrets import unitpay_key
 import random
 import datetime
 from . import db
@@ -20,7 +20,7 @@ import logging
 room = 'kitchen'
 main = Blueprint('main', __name__)
 
-unitpay = UnitPay('unitpay.money', Password.unitpaysc)
+unitpay = UnitPay('unitpay.money', unitpay_key)
 
 
 
@@ -141,7 +141,7 @@ def getpayurl():
     o = Order(customer_id=c, confirmation_code=conf, items=str(items), ord_price=summ, status = 0)
     db.session.add(o)
     db.session.commit()
-    url = unitpay.form(Password.publickey, int(summ), int(o.id), str(desc), 'RUB')
+    url = unitpay.form(unitpay_key, int(summ), int(o.id), str(desc), 'RUB')
 
     return Response(response=json.dumps({'url': str(url)}), status=200, mimetype='application/json')
 
