@@ -1,4 +1,5 @@
-secrets.py
 kitchen.db
-*.pptx
+configuration.py
 *.pyc
+app/workspace.code-workspace
+app/settings.json
