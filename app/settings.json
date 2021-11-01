@@ -1,0 +1,11 @@
+{
+    "workbench.colorTheme": "Default Dark+",
+    "remote.SSH.remotePlatform": {
+        "vkmon.dev": "linux"
+    },
+    "gitlens.defaultDateFormat": null,
+    "explorer.confirmDelete": false,
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    }
+}
