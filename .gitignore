@@ -3,3 +3,4 @@ configuration.py
 *.pyc
 app/workspace.code-workspace
 app/settings.json
+app/secrets.py
